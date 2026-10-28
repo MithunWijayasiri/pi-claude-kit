@@ -1,0 +1,21 @@
+{
+	"name": "pi-claude-kit",
+	"version": "0.1.0",
+	"description": "Claude Code conventions for pi: bridges .claude/skills and .claude/rules using Claude Code's rules loading model.",
+	"keywords": ["pi-package", "claude-code", "pi-extension", "rules", "skills"],
+	"license": "MIT",
+	"type": "module",
+	"files": ["extensions"],
+	"scripts": {
+		"test": "node --experimental-strip-types test/harness.test.ts",
+		"typecheck": "tsc --noEmit"
+	},
+	"peerDependencies": {
+		"@earendil-works/pi-coding-agent": "*"
+	},
+	"devDependencies": {
+		"@earendil-works/pi-coding-agent": "*",
+		"@types/node": "^22",
+		"typescript": "^5.9.0"
+	}
+}
