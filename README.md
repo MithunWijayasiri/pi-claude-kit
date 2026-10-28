@@ -60,7 +60,7 @@ Rule content applies only to files matching the globs above.
 | No `paths:` frontmatter | Always, inlined into the system prompt every session |
 | `paths:` globs | Lazily, appended to the result of the first `read`, `edit`, or `write` of a matching file |
 
-Each lazy rule injects once per session. Compaction and `/tree` branch switches reset this, so the rule injects again on the next matching file. The extension ignores every frontmatter key except `paths:`. Globs use gitignore syntax with brace expansion.
+Each lazy rule injects once per session. Compaction and `/tree` branch switches reset this, so the rule injects again on the next matching file. The extension ignores every frontmatter key except `paths:`. Globs match against the path relative to the project root, the same as in Claude Code. `*.md` matches only files in the project root, `**/*.md` matches at any depth, and brace expansion like `*.{ts,tsx}` works.
 
 ## How it works
 

@@ -18,6 +18,15 @@ function check(name: string, ok: boolean) {
 
 // ---- fixture: project with rules + skills, pi started in a SUBFOLDER ----
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "claude-kit-test-"));
+const userHome = path.join(tmp, "home");
+const userRulesDir = path.join(userHome, ".claude", "rules");
+fs.mkdirSync(userRulesDir, { recursive: true });
+fs.writeFileSync(
+	path.join(userRulesDir, "compact-markdown.md"),
+	'---\npaths:\n  - "docs/**/*.md"\n---\n# Compact Markdown\n\nUser rule.',
+);
+process.env.HOME = userHome;
+process.env.USERPROFILE = userHome;
 const proj = path.join(tmp, "proj");
 const rulesDir = path.join(proj, ".claude", "rules");
 fs.mkdirSync(path.join(proj, "apps", "admin"), { recursive: true });
@@ -141,7 +150,7 @@ check("notify on startup", n3.length === 1 && n3[0].includes("rule(s)"));
 check("#3-blank/comment lines between list items skipped", section.includes("`zz/**`") && section.includes("`yy/**`"));
 
 // 8. round 2: dir under home with no project marker -> no project root (bug #1)
-const noProj = fs.mkdtempSync(path.join(os.tmpdir(), "ck-np-"));
+const noProj = fs.mkdtempSync(path.join(userHome, "ck-np-"));
 const k4 = makeKit();
 await k4.handlers["session_start"]({ reason: "resume" } as never, { cwd: noProj, ui: { notify: () => {} } } as never);
 const ev4 = { systemPrompt: "B", systemPromptOptions: { sections: {} as Record<string, string> } };
@@ -199,3 +208,4 @@ for (const [name, ok] of results) {
 }
 console.log(failed === 0 ? "ALL-PASS" : `${failed} FAILED`);
 fs.rmSync(tmp, { recursive: true, force: true });
+if (failed > 0) process.exitCode = 1;
