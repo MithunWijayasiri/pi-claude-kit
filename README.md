@@ -19,7 +19,7 @@ pi loads `CLAUDE.md` itself, so it needs no setup.
 From GitHub:
 
 ```bash
-pi install git:github.com/<owner>/pi-claude-kit
+pi install git:github.com/MithunWijayasiri/pi-claude-kit
 ```
 
 <details>
