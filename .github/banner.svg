@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-label="pi-claude-kit — Claude Code's .claude/ skills and rules, in pi.">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;family=Inter:wght@400&amp;display=swap');
+    .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .sans { font-family: 'Inter', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    text { white-space: pre; }
+  </style>
+
+  <rect width="1280" height="320" rx="20" fill="#0D0F12"/>
+
+  <text x="64" y="100" class="mono" font-size="15" fill="#7C8590">$ pi install git:github.com/MithunWijayasiri/pi-claude-kit</text>
+
+  <text x="64" y="178" class="mono" font-size="72" font-weight="700" letter-spacing="-1.44" fill="#E8E6E1">pi-claude-kit</text>
+  <rect x="618" y="124" width="30" height="62" fill="#E4572E"/>
+
+  <text x="64" y="226" font-size="20" xml:space="preserve"><tspan class="sans" fill="#A3A9B1">Claude Code's </tspan><tspan class="mono" fill="#E8E6E1">.claude/</tspan><tspan class="sans" fill="#A3A9B1"> skills and rules, in pi.</tspan></text>
+
+  <rect x="806.5" y="59.5" width="409" height="201" rx="12" fill="#15181D" stroke="#252A31"/>
+  <g class="mono" font-size="17" xml:space="preserve">
+    <text x="836" y="106" fill="#E8E6E1">.claude/</text>
+    <text x="836" y="135.75"><tspan fill="#4B535D">├── </tspan><tspan fill="#E8E6E1">skills/       </tspan><tspan fill="#E4572E">→ pi skills</tspan></text>
+    <text x="836" y="165.5"><tspan fill="#4B535D">└── </tspan><tspan fill="#E8E6E1">rules/</tspan></text>
+    <text x="836" y="195.25"><tspan fill="#4B535D">    ├── </tspan><tspan fill="#E8E6E1">style.md  </tspan><tspan fill="#E4572E">→ always on</tspan></text>
+    <text x="836" y="225"><tspan fill="#4B535D">    └── </tspan><tspan fill="#E8E6E1">api.md    </tspan><tspan fill="#E4572E">→ on read: api/**</tspan></text>
+  </g>
+</svg>

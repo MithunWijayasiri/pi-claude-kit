@@ -43,7 +43,7 @@ function findMarkdownFiles(dir: string, visited: Set<string> = new Set()): strin
 
 	let real: string;
 	try {
-		real = fs.realpathSync(dir);
+		real = fs.realpathSync.native(dir);
 	} catch {
 		return [];
 	}
