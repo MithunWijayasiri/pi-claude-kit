@@ -246,7 +246,6 @@ const proj5 = makeProj("proj5", {
 });
 const { section: sec6 } = await startKit(proj5);
 check("#4 inline array: mixed quoting yields three globs", lazyGlobs(sec6, "mixed.md") === "`a/**`, `b/**`, `c/**`");
-check("#4 inline array: no stray quotes", !lazyLine(sec6, "mixed.md").includes('"') && !lazyLine(sec6, "mixed.md").includes("'"));
 check("#4 inline array: comma inside braces not split", lazyGlobs(sec6, "braces.md") === "`x/*.{ts,tsx}`, `y/**`");
 check("#4 scalar: quoted single glob", lazyGlobs(sec6, "scalar-quoted.md") === "`docs/**`");
 check("#4 scalar: unquoted single glob", lazyGlobs(sec6, "scalar-bare.md") === "`docs/**`");

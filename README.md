@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/banner.png" alt="pi-claude-kit" width="100%">
+  <img src="https://raw.githubusercontent.com/MithunWijayasiri/pi-claude-kit/master/.github/banner.png" alt="pi-claude-kit" width="100%">
 </p>
 
 <p align="center">
