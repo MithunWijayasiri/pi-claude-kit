@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/MithunWijayasiri/pi-claude-kit/master/.github/banner.png" alt="pi-claude-kit" width="100%">
-</p>
+<h1 align="center">pi-claude-kit</h1>
 
 <p align="center">
 Use your repo's <code>.claude/skills</code> and <code>.claude/rules</code> in pi. Rules load the same way they do in Claude Code.
