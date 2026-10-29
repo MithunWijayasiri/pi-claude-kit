@@ -199,6 +199,103 @@ await handlers["session_tree"]({} as never);
 const r7 = await readResult("dashboard.ts");
 check("#tree navigation re-injects", (r7?.content.map((c) => c.text).join("") ?? "").includes("Lazy body content."));
 
+// helpers for the edge-case sections below
+const makeProj = (name: string, rules: Record<string, string>) => {
+	const dir = path.join(tmp, name);
+	for (const [file, content] of Object.entries(rules)) {
+		const target = path.join(dir, ".claude", "rules", file);
+		fs.mkdirSync(path.dirname(target), { recursive: true });
+		fs.writeFileSync(target, content);
+	}
+	return dir;
+};
+const startKit = async (cwd: string) => {
+	const kit = makeKit();
+	await kit.handlers["session_start"]({ reason: "resume" } as never, { cwd, ui: { notify: () => {} } } as never);
+	const ev = { systemPrompt: "B", systemPromptOptions: { sections: {} as Record<string, string> } };
+	await kit.handlers["before_agent_start"](ev as never);
+	return { kit, section: ev.systemPromptOptions.sections["claude-rules"] ?? "" };
+};
+const startError = async (cwd: string) => {
+	try {
+		await startKit(cwd);
+		return null;
+	} catch (e) {
+		return (e as Error).message;
+	}
+};
+// lazy list line for a rule file, and just its backticked globs
+const lazyLine = (s: string, file: string) => s.split("\n").find((l) => l.startsWith("- ") && l.includes(file)) ?? "";
+const lazyGlobs = (s: string, file: string) => lazyLine(s, file).split(" — ")[1] ?? "";
+const readFrom = (kit: ReturnType<typeof makeKit>, file: string) =>
+	kit.handlers["tool_result"]({
+		type: "tool_result",
+		toolName: "read",
+		toolCallId: "t1",
+		input: { path: file },
+		content: [{ type: "text", text: "FILE CONTENT" }],
+		isError: false,
+	} as never) as Promise<{ content: { type: string; text: string }[] } | undefined>;
+
+// 14. round 4: inline array and scalar forms of paths:
+const proj5 = makeProj("proj5", {
+	"mixed.md": "---\npaths: [\"a/**\", 'b/**', c/**]\n---\n# Mixed\n\nMixed body.",
+	"braces.md": "---\npaths: [x/*.{ts,tsx}, y/**]\n---\n# Braces\n\nBraces body.",
+	"scalar-quoted.md": '---\npaths: "docs/**"\n---\n# SQ\n\nSQ body.',
+	"scalar-bare.md": "---\npaths: docs/**\n---\n# SB\n\nSB body.",
+});
+const { section: sec6 } = await startKit(proj5);
+check("#4 inline array: mixed quoting yields three globs", lazyGlobs(sec6, "mixed.md") === "`a/**`, `b/**`, `c/**`");
+check("#4 inline array: no stray quotes", !lazyLine(sec6, "mixed.md").includes('"') && !lazyLine(sec6, "mixed.md").includes("'"));
+check("#4 inline array: comma inside braces not split", lazyGlobs(sec6, "braces.md") === "`x/*.{ts,tsx}`, `y/**`");
+check("#4 scalar: quoted single glob", lazyGlobs(sec6, "scalar-quoted.md") === "`docs/**`");
+check("#4 scalar: unquoted single glob", lazyGlobs(sec6, "scalar-bare.md") === "`docs/**`");
+
+const proj6 = makeProj("proj6", { "empty.md": "---\npaths: []\n---\n# Empty" });
+const err6 = await startError(proj6);
+check("#4 empty inline array throws (fail fast)", err6 !== null && err6.includes("no globs"));
+
+const proj7 = makeProj("proj7", { "open.md": "---\npaths: [a/**\n---\n# Open" });
+const err7 = await startError(proj7);
+check("#4 unbalanced inline array throws (fail fast)", err7 !== null && err7.includes("unbalanced"));
+
+// 15. round 4: circular symlink inside the rules dir
+const proj8 = makeProj("proj8", { "sub/rule.md": "# Loop Rule\n\nLoop body." });
+let loopOk = true;
+try {
+	fs.symlinkSync(path.join(proj8, ".claude", "rules"), path.join(proj8, ".claude", "rules", "sub", "loop"), "junction");
+} catch {
+	loopOk = false;
+}
+let loopThrew = false;
+let loopSection = "";
+try {
+	loopSection = (await startKit(proj8)).section;
+} catch {
+	loopThrew = true;
+}
+check("#7 circular symlink: session_start completes", loopOk ? !loopThrew : true);
+check("#7 circular symlink: rule listed once", loopOk ? count(loopSection, "#### .claude/rules/sub/rule.md") === 1 : true);
+check("#7 circular symlink: rule body inlined once", loopOk ? count(loopSection, "Loop body.") === 1 : true);
+
+// 16. round 4: paths: mixed with other frontmatter keys
+const proj9 = makeProj("proj9", {
+	"meta.md":
+		'---\ndescription: meta-desc-A\nalwaysApply: false\npaths:\n  - "m/**"\n  - n/**\ntags: x\n---\n# Meta\n\nMeta body.',
+	"plain.md": "---\ndescription: only-desc-B\n---\n# Plain\n\nPlain body.",
+});
+const { kit: kit9, section: sec9 } = await startKit(proj9);
+check("#4 other keys: list globs parsed, following key not a glob", lazyGlobs(sec9, "meta.md") === "`m/**`, `n/**`");
+check("#4 other keys: frontmatter text not in section", !sec9.includes("meta-desc-A") && !sec9.includes("alwaysApply") && !sec9.includes("tags: x"));
+const rMeta1 = await readFrom(kit9, "m/x.ts");
+const textMeta1 = rMeta1?.content.map((c) => c.text).join("") ?? "";
+check("#4 other keys: body injected without frontmatter", textMeta1.includes("Meta body.") && !textMeta1.includes("meta-desc-A") && !textMeta1.includes("alwaysApply") && !textMeta1.includes("tags: x") && !textMeta1.includes("paths:"));
+await kit9.handlers["session_compact"]({} as never);
+const rMeta2 = await readFrom(kit9, "n/y.ts");
+check("#4 other keys: second list glob matches", (rMeta2?.content.map((c) => c.text).join("") ?? "").includes("Meta body."));
+check("#4 non-paths frontmatter only: always-on, frontmatter stripped", sec9.includes("#### .claude/rules/plain.md\n\n# Plain\n\nPlain body.") && !sec9.includes("only-desc-B"));
+check("#4 non-paths frontmatter only: not in lazy list", lazyLine(sec9, "plain.md") === "");
+
 fs.rmSync(noProj, { recursive: true, force: true });
 
 let failed = 0;
