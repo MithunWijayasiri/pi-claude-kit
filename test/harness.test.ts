@@ -260,12 +260,7 @@ check("#4 unbalanced inline array throws (fail fast)", err7 !== null && err7.inc
 
 // 15. round 4: circular symlink inside the rules dir
 const proj8 = makeProj("proj8", { "sub/rule.md": "# Loop Rule\n\nLoop body." });
-let loopOk = true;
-try {
-	fs.symlinkSync(path.join(proj8, ".claude", "rules"), path.join(proj8, ".claude", "rules", "sub", "loop"), "junction");
-} catch {
-	loopOk = false;
-}
+fs.symlinkSync(path.join(proj8, ".claude", "rules"), path.join(proj8, ".claude", "rules", "sub", "loop"), "junction");
 let loopThrew = false;
 let loopSection = "";
 try {
@@ -273,9 +268,9 @@ try {
 } catch {
 	loopThrew = true;
 }
-check("#7 circular symlink: session_start completes", loopOk ? !loopThrew : true);
-check("#7 circular symlink: rule listed once", loopOk ? count(loopSection, "#### .claude/rules/sub/rule.md") === 1 : true);
-check("#7 circular symlink: rule body inlined once", loopOk ? count(loopSection, "Loop body.") === 1 : true);
+check("#7 circular symlink: rules load without throwing", !loopThrew);
+check("#7 circular symlink: rule listed once", count(loopSection, "#### .claude/rules/sub/rule.md") === 1);
+check("#7 circular symlink: rule body inlined once", count(loopSection, "Loop body.") === 1);
 
 // 16. round 4: paths: mixed with other frontmatter keys
 const proj9 = makeProj("proj9", {
